@@ -14,6 +14,9 @@ export class Users extends BaseEntity implements IUser {
     @Column()
     password!: string;
 
+    @Column()
+    role: string = "normal";
+
     @CreateDateColumn()
     created_at!: Date;
   
