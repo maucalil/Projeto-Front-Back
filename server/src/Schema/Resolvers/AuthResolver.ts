@@ -10,7 +10,7 @@ import AuthConfig from "../../config/auth"
 export class AuthResolver  {
 
     @Mutation(() => Auth)
-    async signIn(
+    async login(
         @Arg("email") email: string,
         @Arg("password") password: string,
         ): Promise<Auth> {

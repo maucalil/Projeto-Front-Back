@@ -16,7 +16,12 @@ const main = async () => {
     const apolloServer = new ApolloServer({
         schema: schema,
         context: ({ req }) => {
-            req.headers.authorization
+            const context = {
+                req,
+                token: req.headers.authorization,
+            } 
+
+            return context;
         }
     })
 

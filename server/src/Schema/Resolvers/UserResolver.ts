@@ -1,5 +1,5 @@
 import { hash } from "bcryptjs";
-import { Arg, Mutation, Query, Resolver, ID } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, ID, Authorized } from "type-graphql";
 
 import { Users } from "../../Entities/Users";
 import { IUser } from "../../Interfaces/IUser";
@@ -14,7 +14,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Message)
-  async createUser(
+  async register(
     @Arg("name") name: string,
     @Arg("email") email: string,
     @Arg("password") password: string,
@@ -67,18 +67,14 @@ export class UserResolver {
     }
   
   @Mutation(() => Message)
+  @Authorized("admin")
   async deleteUser(
     @Arg("id") id: number,
     ): Promise<Message> {
     
         try {
-            const user = await Users.findOne(id);
-            
-            if(user?.role != "admin") {
-              return {successful: false, message: "No authorized"}
-            }
             await Users.delete(id) // as it is a id, can just do (id)
-            return { successful: true, message: "User deleted successfully!"}
+            return { successful: true, message: `User id:${id} deleted successfully!`}
         } 
         catch (err) {
             return {successful: false, message: "Error: " + err}
