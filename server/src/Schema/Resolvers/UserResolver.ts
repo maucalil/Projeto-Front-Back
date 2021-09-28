@@ -1,4 +1,4 @@
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { Arg, Mutation, Query, Resolver, ID, Authorized } from "type-graphql";
 
 import { Users } from "../../Entities/Users";
@@ -11,6 +11,15 @@ export class UserResolver {
   @Query(() => [User])
   async getAllUsers(): Promise<User[]> {
     return await Users.find({ select: ["id","name", "email", "role"] });
+  }
+
+  @Query(() => User)
+  async getUser(
+    @Arg("id") id: number
+  ): Promise<User> {
+    const user = await Users.findOne(id);
+
+    return {name: user?.name!, email: user?.email!, role: user?.role!, password: user?.password!};
   }
 
   @Mutation(() => Message)
@@ -43,22 +52,24 @@ export class UserResolver {
   
   @Mutation(() => Message)
   async updatePassword(
-    @Arg("email") email: string,
+    @Arg("id") id: number,
     @Arg("oldPassword") oldPassword: string,
     @Arg("newPassword") newPassword: string,
     ): Promise<Message> {
       
       try { 
-        const user = await Users.findOne({ email: email });
-          const userPassword = user?.password;
+        const user = await Users.findOne({ id: id });
+          const userPassword = user?.password!;
 
-          if(oldPassword === userPassword) {
-              await Users.update({email: email}, {password: newPassword}); // ({qual usuario quero update}, {o que vou update})
-              return { successful: true, message: "Password updated successfully!"}
-          }
-          else { 
+          const passwordMatched = await compare(oldPassword, userPassword);
+
+          if(!passwordMatched) {
             return { successful: false, message: "Passwords don't match!"}
-          }  
+          }
+
+          const password = await hash(newPassword, 10);
+          await Users.update({id: id}, {password: password}); // ({qual usuario quero update}, {o que vou update})
+          return { successful: true, message: "Password updated successfully!"}
           
         }
       catch(err) {
@@ -67,11 +78,14 @@ export class UserResolver {
     }
   
   @Mutation(() => Message)
-  @Authorized("admin")
+  @Authorized()
   async deleteUser(
     @Arg("id") id: number,
+    @Arg("adminId") adminId: number,
     ): Promise<Message> {
-    
+
+      const adminUser = await Users.findOne(adminId, {select: ["role"]})
+      if(adminUser?.role === "admin") {
         try {
             await Users.delete(id) // as it is a id, can just do (id)
             return { successful: true, message: `User id:${id} deleted successfully!`}
@@ -79,6 +93,9 @@ export class UserResolver {
         catch (err) {
             return {successful: false, message: "Error: " + err}
         }
+      }
+      return {successful: false, message: "Error: You're not a admin!"} 
+        
   }
 
   @Mutation(() => Message)

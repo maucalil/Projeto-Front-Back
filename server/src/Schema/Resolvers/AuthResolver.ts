@@ -15,7 +15,7 @@ export class AuthResolver  {
         @Arg("password") password: string,
         ): Promise<Auth> {
             const user = await Users.findOne( 
-                { email: email },
+                { email: email }, 
              );
     
             if(!user) {

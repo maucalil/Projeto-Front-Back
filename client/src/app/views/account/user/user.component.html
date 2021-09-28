@@ -1,0 +1,9 @@
+<div class="container">
+    <label for="list-group">Seus dados</label>
+    <ul class="list-group"  >
+        <li class="list-group-item">Nome: {{ user.name }}</li>
+        <li class="list-group-item">Email: {{ user.email }}</li>
+        <li class="list-group-item" >Senha: <button (click)="onUpdatePassword()">Alterar senha</button></li>
+
+      </ul>
+</div>
