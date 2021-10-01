@@ -1,8 +1,7 @@
 import { compare, hash } from "bcryptjs";
-import { Arg, Mutation, Query, Resolver, ID, Authorized } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, Authorized } from "type-graphql";
 
 import { Users } from "../../Entities/Users";
-import { IUser } from "../../Interfaces/IUser";
 import { Message } from "../TypeDefs/Messages";
 import { User } from "../TypeDefs/User";
 
@@ -46,7 +45,7 @@ export class UserResolver {
             return { successful: true, message: "User created successfully!"}
         }
         catch (err) {
-            return { successful: false, message:  "err"}
+            return { successful: false, message:  `${err}`}
         }  
   }
   
